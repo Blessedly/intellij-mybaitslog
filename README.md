@@ -4,10 +4,15 @@
 ![GitHub](https://img.shields.io/github/license/Link-Kou/intellij-mybaitslog)
 ![GitHub issues](https://img.shields.io/github/issues/Link-Kou/intellij-mybaitslog)
 
-### IDEA 新版本的 SQL 输出修复（5.0.8.3）
+### IDEA 新版本的 SQL 输出修复与排版（5.0.8.4）
 
 修复 SQL 类型识别隐式依赖 `org.apache.commons.lang.StringUtils`、导致
 `NoClassDefFoundError` 并中断 SQL 输出的问题，保留原有 SQL 类型判断行为。
+
+启用 MyBatis Log 工具窗口的 Filter → Format SQL 后，结构关键字大写，字段、条件和
+分页子句分行，使用四空格缩进，清理行尾空格；函数参数保持同行，引用标识符与字符串保留原文。
+格式化模式移除 SQL 首行装饰前缀，便于复制。含注释、美元引用或特殊转义的 SQL 保留原文，
+不完整 SQL 格式化失败时也直接输出原文。关闭 Format SQL 时保留原始 SQL 内容。
 
 Windows 下使用 PowerShell 7 生成兼容安装包：
 
@@ -15,11 +20,11 @@ Windows 下使用 PowerShell 7 生成兼容安装包：
 pwsh -File ./build-compat.ps1 -IdeaHome 'D:/JetBrains/IntelliJ IDEA' -PluginHome "$env:APPDATA/JetBrains/IntelliJIdea2026.2/plugins/MybatisLog"
 ```
 
-需要已安装的原版 5.0.8.2 插件和带 `javac` 的 IDEA JBR。脚本仅编译修复类，
-保留原版其余 JAR 和界面资源，并对编译结果及最终 JAR 各运行 9 项 SQL 类型验证。
+需要已安装的原版 5.0.8.2 插件和带 `javac` 的 IDEA JBR。脚本仅编译输出和格式化相关类，
+保留原版其余 JAR 和界面资源，并对编译结果及最终 JAR 各运行 9 项 SQL 类型与 24 项排版验证。
 验证会模拟插件类加载隔离，禁止借用 IDE 中其他位置的旧版 Commons Lang。
 这是基于原版插件的兼容打包，不是完整 Gradle 构建，也不代表已验证所有 IDEA API。
-ZIP 输出到 `build/compat-*/MybatisLog-5.0.8.3.zip`，不会自动覆盖已安装插件。
+ZIP 输出到 `build/compat-*/MybatisLog-5.0.8.4.zip`，不会自动覆盖已安装插件。
 
 安装：IDEA → Settings → Plugins → 齿轮 → Install Plugin from Disk，选择 ZIP，
 按提示重启 IDEA 后重新运行项目并执行一次查询，确认 MyBatis Log 窗口恢复输出。

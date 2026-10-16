@@ -71,15 +71,17 @@ public class PrintlnUtil {
             //序号前缀字符串
             final SqlVO sqlVO = restoreSql(currentLine);
             if (null != sqlVO) {
-                String completesql = sqlVO.getCompleteSql().replaceAll("\t|\r|\n", "");
+                // 保留字符串参数内的换行与制表符，排版只交给 SQL 格式化器。
+                String completesql = sqlVO.getCompleteSql();
                 final String id = sqlVO.getId();
                 final String parameter = sqlVO.getParameter();
-                if (Config.Idea.getFormatSql()) {
+                final boolean formatSql = Config.Idea.getFormatSql();
+                if (formatSql) {
                     completesql = new BasicFormatter().format(completesql);
                 }
                 //序号
                 PrintlnUtil.println(project, Config.SQL_START_LINE + id + "\n", ConsoleViewContentType.USER_INPUT);
-                PrintlnUtil.printlnSqlType(project, Config.SQL_MIDDLE_LINE, completesql + "\n");
+                PrintlnUtil.printlnSqlType(project, formatSql ? "" : Config.SQL_MIDDLE_LINE, completesql + "\n");
                 PrintlnUtil.printlnSqlType(project, Config.SQL_MIDDLE_LINE, parameter + "\n");
                 PrintlnUtil.println(project, Config.SQL_END_LINE + "\n", ConsoleViewContentType.USER_INPUT);
             }

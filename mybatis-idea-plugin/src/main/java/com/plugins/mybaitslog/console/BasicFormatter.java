@@ -9,8 +9,10 @@ package com.plugins.mybaitslog.console;
  */
 
 import java.util.HashSet;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -48,6 +50,8 @@ public class BasicFormatter {
         END_CLAUSES.add("by");
         END_CLAUSES.add("into");
         END_CLAUSES.add("union");
+        END_CLAUSES.add("limit");
+        END_CLAUSES.add("offset");
 
         LOGICAL.add("and");
         LOGICAL.add("or");
@@ -67,6 +71,7 @@ public class BasicFormatter {
 
         MISC.add("select");
         MISC.add("on");
+        Collections.addAll(MISC, "as", "distinct", "case", "between", "is", "not", "null", "like", "asc", "desc");
     }
 
     private static final String INDENT_STRING = "    ";
@@ -74,8 +79,23 @@ public class BasicFormatter {
     /*System.lineSeparator() + INDENT_STRING*/
     private static final String INITIAL = "";
 
+    /** 按 SQL 子句分行缩进；无法安全识别的语法保留原文。 */
     public String format(String source) {
-        return new FormatProcess(source).perform();
+        if (source == null) {
+            return "";
+        }
+        // shortcut: 注释、美元引用和特殊转义保留原文，需要排版这些语法时接入方言解析器。
+        if (source.contains("--") || source.contains("/*") || source.contains("#")
+                || source.contains("\\") || source.contains("]]")
+                || source.matches("(?s).*\\$(?:[a-zA-Z_][a-zA-Z_0-9]*)?\\$.*")) {
+            return source;
+        }
+        try {
+            return new FormatProcess(source).perform().trim();
+        } catch (NoSuchElementException ex) {
+            // 不完整的日志 SQL 不应导致整条日志无法输出。
+            return source;
+        }
     }
 
     private static class FormatProcess {
@@ -124,13 +144,14 @@ public class BasicFormatter {
                     }
                     // cannot handle single quotes
                     while (!"'".equals(t) && tokens.hasMoreTokens());
-                } else if ("\"".equals(token)) {
+                } else if ("\"".equals(token) || "`".equals(token)) {
+                    final String quote = token;
                     String t;
                     do {
                         t = tokens.nextToken();
                         token += t;
                     }
-                    while (!"\"".equals(t) && tokens.hasMoreTokens());
+                    while (!quote.equals(t) && tokens.hasMoreTokens());
                 }
                 // SQL Server uses "[" and "]" to escape reserved words
                 // see SQLServerDialect.openQuote and SQLServerDialect.closeQuote
@@ -143,9 +164,10 @@ public class BasicFormatter {
                     while (!"]".equals(t) && tokens.hasMoreTokens());
                 }
 
-                if (afterByOrSetOrFromOrSelect && ",".equals(token)) {
+                if (afterByOrSetOrFromOrSelect && inFunction == 0 && parensSinceSelect == 0
+                        && ",".equals(token)) {
                     commaAfterByOrFromOrSelect();
-                } else if (afterOn && ",".equals(token)) {
+                } else if (afterOn && inFunction == 0 && parensSinceSelect == 0 && ",".equals(token)) {
                     commaAfterOn();
                 } else if ("(".equals(token)) {
                     openParen();
@@ -229,7 +251,7 @@ public class BasicFormatter {
         }
 
         private void white() {
-            if (!beginLine) {
+            if (!beginLine && result.length() > 0 && result.charAt(result.length() - 1) != ' ') {
                 result.append(" ");
             }
         }
@@ -257,7 +279,14 @@ public class BasicFormatter {
         }
 
         private void out() {
-            result.append(token);
+            // 只转换已识别的结构关键字，保留字段名和引号内文本的大小写。
+            if (BEGIN_CLAUSES.contains(lcToken) || END_CLAUSES.contains(lcToken)
+                    || LOGICAL.contains(lcToken) || DML.contains(lcToken)
+                    || MISC.contains(lcToken) || QUANTIFIERS.contains(lcToken) || "values".equals(lcToken)) {
+                result.append(token.toUpperCase(Locale.ROOT));
+            } else {
+                result.append(token);
+            }
         }
 
         private void endNewClause() {
@@ -361,6 +390,10 @@ public class BasicFormatter {
         }
 
         private void newline() {
+            // 清理行尾空格，避免字段列表与条件之间出现多余空白。
+            while (result.length() > 0 && result.charAt(result.length() - 1) == ' ') {
+                result.setLength(result.length() - 1);
+            }
             result.append(System.lineSeparator());
             for (int i = 0; i < indent; i++) {
                 result.append(INDENT_STRING);
