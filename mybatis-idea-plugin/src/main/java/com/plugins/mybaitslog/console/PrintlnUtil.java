@@ -7,7 +7,6 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.project.Project;
 import com.plugins.mybaitslog.Config;
-import org.apache.commons.lang.StringUtils;
 
 import java.awt.*;
 import java.util.Map;
@@ -116,7 +115,8 @@ public class PrintlnUtil {
      * @return String
      */
     private static String getSqlType(String sql) {
-        if (StringUtils.isNotBlank(sql)) {
+        // 空串和空白串会自然归为 other，避免依赖 IDEA 未承诺提供的旧版 Commons Lang。
+        if (sql != null) {
             String lowerLine = sql.toLowerCase().trim();
             if (lowerLine.startsWith("insert")) {
                 return "insert";
