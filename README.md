@@ -1,133 +1,28 @@
-# [![Mybatislog](https://raw.githubusercontent.com/Link-Kou/intellij-mybaitslog/master/image/pluginIcon.svg)](https://github.com/Link-Kou/intellij-mybaitslog) Mybatislog
+# MyBatis Log EasyPlus
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/Link-Kou/intellij-mybaitslog)
-![GitHub](https://img.shields.io/github/license/Link-Kou/intellij-mybaitslog)
-![GitHub issues](https://img.shields.io/github/issues/Link-Kou/intellij-mybaitslog)
+本项目 fork 自 [Link-Kou/intellij-mybaitslog](https://github.com/Link-Kou/intellij-mybaitslog)，原作者为 **Link-Kou（linkkou）**。感谢原作者提供的开源插件。
 
-### IDEA 新版本的 SQL 输出修复与排版（5.0.8.4）
+本 fork 基于原版 **5.0.8.2** 修复并改进，当前版本为 **5.0.8.4**。
 
-修复 SQL 类型识别隐式依赖 `org.apache.commons.lang.StringUtils`、导致
-`NoClassDefFoundError` 并中断 SQL 输出的问题，保留原有 SQL 类型判断行为。
+## 修改内容
 
-启用 MyBatis Log 工具窗口的 Filter → Format SQL 后，结构关键字大写，字段、条件和
-分页子句分行，使用四空格缩进，清理行尾空格；函数参数保持同行，引用标识符与字符串保留原文。
-格式化模式移除 SQL 首行装饰前缀，便于复制。含注释、美元引用或特殊转义的 SQL 保留原文，
-不完整 SQL 格式化失败时也直接输出原文。关闭 Format SQL 时保留原始 SQL 内容。
+- 修复 SQL 输出时缺少 `org.apache.commons.lang.StringUtils` 引发的 `NoClassDefFoundError`，移除这项隐式依赖。
+- 优化 SQL 排版：结构关键字大写、四空格缩进、字段和条件分行、分页子句分行、清理行尾空格，函数参数保持同行。
+- 格式化模式下移除 SQL 首行的装饰前缀，方便复制 SQL。
+- 保留字符串参数中的换行、制表符及引用标识符的原始内容；含注释、美元引用或特殊转义的 SQL 保留原文，格式化过程出现已处理的解析异常时回退到原文。
+- 增加回归验证和 Windows 兼容打包脚本 `build-compat.ps1`。
 
-Windows 下使用 PowerShell 7 生成兼容安装包：
+## 测试环境
 
-```powershell
-pwsh -File ./build-compat.ps1 -IdeaHome 'D:/JetBrains/IntelliJ IDEA' -PluginHome "$env:APPDATA/JetBrains/IntelliJIdea2026.2/plugins/MybatisLog"
-```
+- 系统：Windows
+- IntelliJ IDEA：**2026.2.3 Ultimate**，Build **IU-262.10968.63**
+- 插件版本：**5.0.8.4**
+- 验证日期：**2026-10-16**
 
-需要已安装的原版 5.0.8.2 插件和带 `javac` 的 IDEA JBR。脚本仅编译输出和格式化相关类，
-保留原版其余 JAR 和界面资源，并对编译结果及最终 JAR 各运行 9 项 SQL 类型与 24 项排版验证。
-验证会模拟插件类加载隔离，禁止借用 IDE 中其他位置的旧版 Commons Lang。
-这是基于原版插件的兼容打包，不是完整 Gradle 构建，也不代表已验证所有 IDEA API。
-ZIP 输出到 `build/compat-*/MybatisLog-5.0.8.4.zip`，不会自动覆盖已安装插件。
+## 测试结果
 
-安装：IDEA → Settings → Plugins → 齿轮 → Install Plugin from Disk，选择 ZIP，
-按提示重启 IDEA 后重新运行项目并执行一次查询，确认 MyBatis Log 窗口恢复输出。
-回退时从插件市场重新安装原版 5.0.8.2。
+- **自动化验证通过**：9 项 SQL 类型识别验证、24 项 SQL 排版验证，共 33 项；编译结果与最终安装包中的 JAR 均通过验证。
+- **原问题复现与修复验证通过**：模拟插件类加载隔离后，原版可复现缺少 `StringUtils` 的异常，修复版通过验证。
+- **实际使用确认通过**：在上述 IDEA 环境安装插件后，SQL 输出正常；在 MyBatis Log 窗口点击漏斗图标 **Filter**，勾选 **Format SQL** 并确认后，新输出的 SQL 格式化生效，已由使用者确认。
 
-### Mybatislog能做什么？
-
-> Mybatislog是基于IntelliJ 开发的插件项目，用来格式化输出Mybatis的Sql。
-
-![样列](https://raw.githubusercontent.com/Link-Kou/intellij-mybaitslog/master/image/2020-03-25_09-28-47.jpg "样列")
-
-![样列](https://raw.githubusercontent.com/Link-Kou/intellij-mybaitslog/master/image/2023-04-28_08-33-52.gif "样列")
-
-
-### 在线安装(搜索)
-
-IDEA --> Setting --> Plugins --> 搜索 MyBatis Log EasyPlus
-
-![样列](https://raw.githubusercontent.com/Link-Kou/intellij-mybaitslog/master/image/img.png "样列")
-
-
-### 捐赠 | Donate
-
-> 虽然日常时间很忙碌，也为了碎银几两而发愁，但是希望借此慰藉心中早已经开始缥缈的诗与远方。<br/>
-> 欢迎Fork，欢迎继续扩展
-
-
-## <p style="color:red">★★超级无敌丝滑★★</p>
-> 版本V5.<b style="color:red">支持所有数据库的所有SQL都能均能正常格式化输出</b><br/>
-> 版本V5.插件支持IDEA版本2020.1以上<br/>
-> 版本V5.JKD8以上<br/>
-> 版本V5.插件支持Mybatis版本<b>3.2.0<b/>以上，3.2.0已经是2013发布的。所以更低版本将不在支持<br/>
-> 版本V5.插件对MybatisPlus等插件也进行了测试，目前大多数功能已支持<br/>
-
-## <p style="color:red">★★已知问题★★</p>
-> 不支持Gradle，正在想办法中。如有路过大神知道如何解决还请度化本项目一下。
-> 不支持自定义实现SqlSource，有解决办法测试不理想，在继续想办法中。
-
-### Sponsors
-
-<table>
-      <td>
-        <a href="https://www.jetbrains.com/?from=TreeInfotip" target="_blank">
-            <img src="https://cdn.jsdelivr.net/gh/YiiGuxing/TranslationPlugin@master/images/jetbrains.svg" alt="JetBrains" title="Development powered by JetBrains.">
-        </a>
-      </td>
-</table>
-
-#### <kbd>2023.08.20</kbd> -> <kbd> 最后一个支持《IDEA 2021.1》的版本，感谢各位社区伙伴的测试反馈,现已修复若干个已知问题，装备下一个版本大迭代</kbd>
-
-#### <kbd>2023.05.28</kbd> -> <kbd>对额外的扩展插件进行支持</kbd>
-
-#### <kbd>2023.05.22</kbd> -> <kbd>《IDEA 2021.1 以上》感谢各位社区伙伴的测试反馈，现已修复若干个已知问题</kbd>
-
-#### <kbd>2023.05.11</kbd> -> <kbd>《IDEA 2021.1 以上》★★★优化了对mybatis-plus的支持，添加了对参数自动解析能力，现已修复若干个已知问题★★★</kbd>
-
-#### <kbd>2023.04.19</kbd> -> <kbd>《IDEA 2021.1 以上》感谢各位社区伙伴的测试反馈，现已修复若干个已知问题</kbd>
-
-#### <kbd>2023.04.10</kbd> -> <kbd>《IDEA 2019.3 以上》感谢各位社区伙伴的测试反馈，现已修复若干个输出格式化的问题</kbd>
-
-#### <kbd>2023.03.30</kbd> -> <kbd>《IDEA 2019.3 以上》★★★超级重大更新，从版本V5将实现丝滑体验;多IDEA版本支持★★★</kbd>
-
-#### <kbd>2022.12.01</kbd> -> <kbd>V4不断探索</kbd>
-
-#### <kbd>2022.08.16</kbd> -> <kbd>★★★重大更新，从版本V3开始将彻底解决字符串替代弊端，支持所有数据库★★★</kbd>
-
-#### <kbd>2021.06.12</kbd> -> <kbd>《IDEA 2021.3 测试通过支持使用。》</kbd>
-
-#### <kbd>2021.01.18</kbd> ->  <kbd>支持IDEA：2020.3.1，Master代码升级到IDEA2020.3.1版本(JAVA_11版本)</kbd>
-
-#### <kbd>2021.01.31</kbd> ->  <kbd>发布2.0包。不向下兼容IDEA:2020.3以下版本，拥抱Java11，代码将保持兼容度，如果需要2020.3以下包支持，自行编译以下。</kbd>
-
-#### <kbd>2021.02.11</kbd> ->  <kbd>发布2.0.1包。修复兼容性问题，不兼容还是会有不少后遗症。</kbd>
-
-#### <kbd>2021.06.15</kbd> ->  <kbd>发布2.0.5包。修复无法自定义关键字问题。</kbd>
-
-#### <kbd>2021.09.16</kbd> ->  <kbd>发布2.0.6包。增加自动生成字面量按钮。</kbd>
-
-#### <kbd>2021.12.15</kbd> ->  <kbd>支持IDEA 2020.3 发布2.0.7包。修复无法自定义关键字问题。</kbd>
-
-#### <kbd>2020.08.11</kbd> -> <kbd>《IDEA 2020.2 测试通过支持使用。》</kbd>
-
-#### <kbd>2020.08.25</kbd> ->  <kbd>重构代码所有代码，代码中完善备注信息</kbd>
-
-#### <kbd>2020.09.19</kbd> ->  <kbd>添加对特点类型的引号支持</kbd>
-
-#### <kbd>2020.10.07</kbd> ->  <kbd>支持2020.2.3版本</kbd>
-
-#### <kbd>2020.11.20</kbd> ->  <kbd>改进分隔判断，由单纯通过，判断会存在无法对文本正常分隔的情况下。</kbd>
-
-#### <kbd>2020.12.18</kbd> ->  <kbd>改进Like判断异常(解决还不够优雅,不影响正常使用)。</kbd>
-
-#### <kbd>2020.12.19</kbd> ->  <kbd>添加可选是否格式化。</kbd>
-
----
-
-### 使用环境
-
-`IntelliJ IDEA Ultimate版（191+）`
-
-### 源代码构建
-
-    项目管理：Gradle
-
-
-
+兼容安装包仅重新编译修改涉及的类，其余组件复用原版插件二进制，未执行完整 Gradle 构建。上述结果仅代表已验证的环境，不代表所有 IDEA 版本和数据库方言均已验证。
